@@ -1,6 +1,9 @@
 # Auth Toolbox
 
-## 3.0.0-beta1
+## 3.1.0
+- ProfileId is used to request permissions instead of userId if available
+
+## 3.0.0
 - Upgrade to ASP.NET Core 2.0
 
 ## 2.5.0

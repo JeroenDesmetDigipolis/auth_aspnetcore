@@ -66,6 +66,34 @@ namespace Digipolis.Auth.PDP
             return pdpResponse;
         }
 
+        public async Task<PdpResponse> GetPermissionsAsync(string profileType, string profileId, string application)
+        {
+            PdpResponse pdpResponse = null;
+
+            if (cachingEnabled)
+            {
+                pdpResponse = _cache.Get<PdpResponse>(BuildCacheKey($"{profileType}-{profileId}"));
+
+                if (pdpResponse != null)
+                    return pdpResponse;
+            }
+
+            var response = await _client.GetAsync($"{_options.PdpUrl}/applications/{application}/permissions?profileId={profileId}&profileType={profileType}");
+            if (response.IsSuccessStatusCode)
+            {
+                pdpResponse = await response.Content.ReadAsAsync<PdpResponse>();
+            }
+            else
+            {
+                _logger.LogCritical($"Impossible to retreive permissions from {_options.PdpUrl} for {application} / {profileType} {profileId}. Response status code: {response.StatusCode}");
+            }
+
+            if (cachingEnabled && (pdpResponse?.permissions.Any()).GetValueOrDefault())
+                _cache.Set(BuildCacheKey($"{profileType}-{profileId}"), pdpResponse, _cacheOptions);
+
+            return pdpResponse;
+        }
+
         private string BuildCacheKey(string user) => $"pdpResponse-{user}";
     }
 }

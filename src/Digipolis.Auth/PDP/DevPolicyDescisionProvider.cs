@@ -29,5 +29,16 @@ namespace Digipolis.Auth.PDP
 
             return Task.FromResult<PdpResponse>(pdpResponse);
         }
+
+        public Task<PdpResponse> GetPermissionsAsync(string profileType, string profileId, string application)
+        {
+            var pdpResponse = new PdpResponse
+            {
+                applicationId = application,
+                permissions = _permissions.Permissions
+            };
+
+            return Task.FromResult<PdpResponse>(pdpResponse);
+        }
     }
 }

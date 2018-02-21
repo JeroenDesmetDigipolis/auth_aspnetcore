@@ -24,12 +24,23 @@ namespace Digipolis.Auth.PDP
 
         public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
         {
-            if (principal?.Identity?.Name == null || principal?.Identities?.FirstOrDefault()?.HasClaim(c => c.Type == Claims.PermissionsType) == true)
+            if (principal?.Identities?.FirstOrDefault()?.HasClaim(c => c.Type == Claims.PermissionsType) == true)
                 return principal;
 
-            var userId = principal.Identity.Name;
+            var profileType = principal?.Identities?.FirstOrDefault()?.Claims.FirstOrDefault(c => c.Type == Claims.ProfileType)?.Value;
+            var profileId = principal?.Identities?.FirstOrDefault()?.Claims.FirstOrDefault(c => c.Type == Claims.ProfileId)?.Value;
 
-            var pdpResponse = await _pdpProvider.GetPermissionsAsync(userId, _authOptions.ApplicationName);
+            PdpResponse pdpResponse;
+
+            if (!String.IsNullOrWhiteSpace(profileType) && !String.IsNullOrWhiteSpace(profileId))
+            {
+                pdpResponse = await _pdpProvider.GetPermissionsAsync(profileType, profileId, _authOptions.ApplicationName);
+            }
+            else
+            {
+                var userId = principal.Identity.Name;
+                pdpResponse = await _pdpProvider.GetPermissionsAsync(userId, _authOptions.ApplicationName);
+            }
 
             pdpResponse?.permissions?.ToList().ForEach(permission =>
             {
